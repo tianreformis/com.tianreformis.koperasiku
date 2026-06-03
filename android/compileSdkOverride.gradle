@@ -1,0 +1,7 @@
+allprojects { project ->
+    afterEvaluate {
+        if (project.hasProperty("android")) {
+            project.android.compileSdkVersion = 36
+        }
+    }
+}

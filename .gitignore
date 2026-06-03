@@ -1,0 +1,41 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+.metadata/
+*.iml
+*.lock
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+out/
+
+# VSCode
+.vscode/
+
+# Flutter
+.dart_tool/
+.packages
+.build/
+build/
+
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+local.properties
+
+# macOS
+.DS_Store
+
+# Dart
+pubspec.lock
+.dart_tool

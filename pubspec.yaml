@@ -1,0 +1,58 @@
+name: koperasi_ku
+description: Aplikasi Koperasi Simpan Pinjam - KoperasiKu
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.16.0
+  cloud_firestore: ^4.14.0
+  firebase_storage: ^11.5.6
+  firebase_messaging: ^14.7.10
+
+  # State Management
+  provider: ^6.1.1
+  riverpod: ^2.4.9
+  flutter_riverpod: ^2.4.9
+
+  # UI
+  google_fonts: ^6.1.0
+  intl: 0.20.2
+  cupertino_icons: ^1.0.6
+  shimmer: ^3.0.0
+  fl_chart: ^0.65.0
+
+  # PDF & Export
+  pdf: ^3.10.7
+  printing: ^5.11.1
+  share_plus: ^7.2.1
+  open_file: ^3.3.2
+
+  # Utility
+  image_picker: ^1.0.7
+  path_provider: ^2.1.1
+  connectivity_plus: 5.0.2
+  cached_network_image: ^3.3.0
+  flutter_local_notifications: ^17.0.0
+  rxdart: ^0.27.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/

@@ -1,0 +1,67 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "role", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "simpanan",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "tanggal", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "simpanan",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tanggal", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "simpanan",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tanggal", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pinjaman",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pinjaman",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "angsuran",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pinjamanId", "order": "ASCENDING" },
+        { "fieldPath": "angsuranKe", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "angsuran",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "jatuhTempo", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

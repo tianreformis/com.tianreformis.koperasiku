@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "646861084153",
+    "project_id": "koperasiku-83f3f",
+    "storage_bucket": "koperasiku-83f3f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:646861084153:android:59c99f9c7f77f1962f5928",
+        "android_client_info": {
+          "package_name": "com.tianreformis.koperasiku"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEA4-kNg91ZGLzxF19DWZSd9eAxml1d9w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
