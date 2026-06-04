@@ -41,33 +41,48 @@ class DummyDataSeeder {
     print('Seeding data dummy selesai!');
   }
 
-  Future<void> _createAdmin() async {
+  Future<User?> _ensureUser(String email, String password) async {
     try {
       final result = await _auth.createUserWithEmailAndPassword(
-        email: 'admin@koperasi.id',
-        password: 'admin123',
+        email: email, password: password,
       );
-
-      final admin = UserModel(
-        id: result.user!.uid,
-        nomorAnggota: 'ADM-001',
-        nama: 'Admin Koperasi',
-        email: 'admin@koperasi.id',
-        noTelepon: '081234567890',
-        alamat: 'Jl. Koperasi No. 1, Jakarta',
-        role: 'admin',
-        createdAt: DateTime.now(),
-      );
-
-      await _firestore
-          .collection(AppConstants.usersCollection)
-          .doc(result.user!.uid)
-          .set(admin.toMap());
-
-      print('Admin created: admin@koperasi.id / admin123');
+      return result.user;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        final result = await _auth.signInWithEmailAndPassword(
+          email: email, password: password,
+        );
+        return result.user;
+      }
+      print('Auth error for $email: $e');
+      return null;
     } catch (e) {
-      print('Admin creation error: $e');
+      print('Auth error for $email: $e');
+      return null;
     }
+  }
+
+  Future<void> _createAdmin() async {
+    final user = await _ensureUser('admin@koperasi.id', 'admin123');
+    if (user == null) return;
+
+    final admin = UserModel(
+      id: user.uid,
+      nomorAnggota: 'ADM-001',
+      nama: 'Admin Koperasi',
+      email: 'admin@koperasi.id',
+      noTelepon: '081234567890',
+      alamat: 'Jl. Koperasi No. 1, Jakarta',
+      role: 'admin',
+      createdAt: DateTime.now(),
+    );
+
+    await _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(user.uid)
+        .set(admin.toMap());
+
+    print('Admin ready: admin@koperasi.id / admin123');
   }
 
   Future<List<String>> _createAnggota() async {
@@ -112,35 +127,32 @@ class DummyDataSeeder {
     final List<String> userIds = [];
 
     for (int i = 0; i < anggotaData.length; i++) {
-      try {
-        final data = anggotaData[i];
-        final result = await _auth.createUserWithEmailAndPassword(
-          email: data['email'] as String,
-          password: data['password'] as String,
-        );
+      final data = anggotaData[i];
+      final user = await _ensureUser(
+        data['email'] as String,
+        data['password'] as String,
+      );
+      if (user == null) continue;
 
-        final anggota = UserModel(
-          id: result.user!.uid,
-          nomorAnggota: 'AGN-${(i + 1).toString().padLeft(3, '0')}',
-          nama: data['nama'] as String,
-          email: data['email'] as String,
-          noTelepon: data['noTelp'] as String,
-          alamat: data['alamat'] as String,
-          role: 'anggota',
-          createdAt: DateTime.now().subtract(Duration(days: 90 - i * 10)),
-        );
+      final anggota = UserModel(
+        id: user.uid,
+        nomorAnggota: 'AGN-${(i + 1).toString().padLeft(3, '0')}',
+        nama: data['nama'] as String,
+        email: data['email'] as String,
+        noTelepon: data['noTelp'] as String,
+        alamat: data['alamat'] as String,
+        role: 'anggota',
+        createdAt: DateTime.now().subtract(Duration(days: 90 - i * 10)),
+      );
 
-        await _firestore
-            .collection(AppConstants.usersCollection)
-            .doc(result.user!.uid)
-            .set(anggota.toMap());
+      await _firestore
+          .collection(AppConstants.usersCollection)
+          .doc(user.uid)
+          .set(anggota.toMap());
 
-        userIds.add(result.user!.uid);
-        print(
-            'Anggota created: ${data['email']} / ${data['password']} (${data['nama']})');
-      } catch (e) {
-        print('Anggota creation error: $e');
-      }
+      userIds.add(user.uid);
+      print(
+          'Anggota ready: ${data['email']} / ${data['password']} (${data['nama']})');
     }
 
     return userIds;

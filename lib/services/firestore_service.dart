@@ -15,11 +15,12 @@ class FirestoreService {
     final snapshot = await _firestore
         .collection(AppConstants.usersCollection)
         .where('role', isEqualTo: 'anggota')
-        .orderBy('createdAt', descending: true)
         .get();
-    return snapshot.docs
+    final list = snapshot.docs
         .map((doc) => UserModel.fromMap(doc.data(), id: doc.id))
         .toList();
+    list.sort((a, b) => (b.createdAt ?? DateTime.now()).compareTo(a.createdAt ?? DateTime.now()));
+    return list;
   }
 
   Future<UserModel?> getUserById(String userId) async {
@@ -73,21 +74,27 @@ class FirestoreService {
     return _firestore
         .collection(AppConstants.simpananCollection)
         .where('userId', isEqualTo: userId)
-        .orderBy('tanggal', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => SimpananModel.fromMap(doc.data(), id: doc.id))
-            .toList());
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => SimpananModel.fromMap(doc.data(), id: doc.id))
+          .toList();
+      list.sort((a, b) => (b.tanggal ?? DateTime.now()).compareTo(a.tanggal ?? DateTime.now()));
+      return list;
+    });
   }
 
   Stream<List<SimpananModel>> getAllSimpanan() {
     return _firestore
         .collection(AppConstants.simpananCollection)
-        .orderBy('tanggal', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => SimpananModel.fromMap(doc.data(), id: doc.id))
-            .toList());
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => SimpananModel.fromMap(doc.data(), id: doc.id))
+          .toList();
+      list.sort((a, b) => (b.tanggal ?? DateTime.now()).compareTo(a.tanggal ?? DateTime.now()));
+      return list;
+    });
   }
 
   Future<double> getTotalSimpananHariIni() async {
@@ -139,21 +146,27 @@ class FirestoreService {
     return _firestore
         .collection(AppConstants.pinjamanCollection)
         .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => PinjamanModel.fromMap(doc.data(), id: doc.id))
-            .toList());
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => PinjamanModel.fromMap(doc.data(), id: doc.id))
+          .toList();
+      list.sort((a, b) => (b.createdAt ?? DateTime.now()).compareTo(a.createdAt ?? DateTime.now()));
+      return list;
+    });
   }
 
   Stream<List<PinjamanModel>> getAllPinjaman() {
     return _firestore
         .collection(AppConstants.pinjamanCollection)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => PinjamanModel.fromMap(doc.data(), id: doc.id))
-            .toList());
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => PinjamanModel.fromMap(doc.data(), id: doc.id))
+          .toList();
+      list.sort((a, b) => (b.createdAt ?? DateTime.now()).compareTo(a.createdAt ?? DateTime.now()));
+      return list;
+    });
   }
 
   Future<void> approvePinjaman(String pinjamanId, String adminId) async {
@@ -265,22 +278,28 @@ class FirestoreService {
     return _firestore
         .collection(AppConstants.angsuranCollection)
         .where('pinjamanId', isEqualTo: pinjamanId)
-        .orderBy('angsuranKe')
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => AngsuranModel.fromMap(doc.data(), id: doc.id))
-            .toList());
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => AngsuranModel.fromMap(doc.data(), id: doc.id))
+          .toList();
+      list.sort((a, b) => a.angsuranKe.compareTo(b.angsuranKe));
+      return list;
+    });
   }
 
   Stream<List<AngsuranModel>> getAngsuranByUser(String userId) {
     return _firestore
         .collection(AppConstants.angsuranCollection)
         .where('userId', isEqualTo: userId)
-        .orderBy('jatuhTempo', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => AngsuranModel.fromMap(doc.data(), id: doc.id))
-            .toList());
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => AngsuranModel.fromMap(doc.data(), id: doc.id))
+          .toList();
+      list.sort((a, b) => (b.jatuhTempo ?? DateTime.now()).compareTo(a.jatuhTempo ?? DateTime.now()));
+      return list;
+    });
   }
 
   Future<void> bayarAngsuran(String angsuranId, double jumlah) async {
@@ -322,11 +341,12 @@ class FirestoreService {
         .collection(AppConstants.simpananCollection)
         .where('tanggal', isGreaterThanOrEqualTo: start)
         .where('tanggal', isLessThanOrEqualTo: end)
-        .orderBy('tanggal')
         .get();
-    return snapshot.docs
+    final list = snapshot.docs
         .map((doc) => SimpananModel.fromMap(doc.data(), id: doc.id))
         .toList();
+    list.sort((a, b) => (a.tanggal ?? DateTime.now()).compareTo(b.tanggal ?? DateTime.now()));
+    return list;
   }
 
   Future<List<PinjamanModel>> getPinjamanByDateRange(
@@ -335,10 +355,11 @@ class FirestoreService {
         .collection(AppConstants.pinjamanCollection)
         .where('createdAt', isGreaterThanOrEqualTo: start)
         .where('createdAt', isLessThanOrEqualTo: end)
-        .orderBy('createdAt')
         .get();
-    return snapshot.docs
+    final list = snapshot.docs
         .map((doc) => PinjamanModel.fromMap(doc.data(), id: doc.id))
         .toList();
+    list.sort((a, b) => (a.createdAt ?? DateTime.now()).compareTo(b.createdAt ?? DateTime.now()));
+    return list;
   }
 }

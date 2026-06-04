@@ -23,22 +23,21 @@ service cloud.firestore {
 
     // Simpanan collection
     match /simpanan/{simpananId} {
-      allow read: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow read: if isAuthenticated() && (isAdmin() || request.auth.uid == resource.data.userId);
       allow create: if isAuthenticated();
       allow update, delete: if isAuthenticated();
     }
 
     // Pinjaman collection
     match /pinjaman/{pinjamanId} {
-      allow read: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow read: if isAuthenticated() && (isAdmin() || request.auth.uid == resource.data.userId);
       allow create: if isAuthenticated();
       allow update, delete: if isAuthenticated();
     }
 
     // Angsuran collection
     match /angsuran/{angsuranId} {
-      allow read: if isAuthenticated();
-      allow create, update, delete: if isAuthenticated();
+      allow read, write: if isAuthenticated();
     }
 
     // Settings collection
