@@ -14,6 +14,7 @@ import '../screens/anggota/anggota_dashboard_screen.dart';
 import '../screens/anggota/riwayat_simpanan_screen.dart';
 import '../screens/anggota/riwayat_pinjaman_screen.dart';
 import '../screens/anggota/pengajuan_pinjaman_screen.dart';
+import '../screens/anggota/edit_profile_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -35,6 +36,7 @@ class AppRoutes {
   static const String anggotaRiwayatSimpanan = '/anggota/riwayat-simpanan';
   static const String anggotaRiwayatPinjaman = '/anggota/riwayat-pinjaman';
   static const String anggotaPengajuanPinjaman = '/anggota/pengajuan-pinjaman';
+  static const String anggotaEditProfile = '/anggota/edit-profil';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -53,6 +55,7 @@ class AppRoutes {
       anggotaRiwayatSimpanan: (context) => const RiwayatSimpananScreen(),
       anggotaRiwayatPinjaman: (context) => const RiwayatPinjamanScreen(),
       anggotaPengajuanPinjaman: (context) => const PengajuanPinjamanScreen(),
+      anggotaEditProfile: (context) => const EditProfileScreen(),
     };
   }
 }

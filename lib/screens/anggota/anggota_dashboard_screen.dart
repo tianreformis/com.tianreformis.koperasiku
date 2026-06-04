@@ -287,6 +287,22 @@ class _AnggotaDashboardScreenState extends ConsumerState<AnggotaDashboardScreen>
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Informasi Profil',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge
+                                ?.copyWith(fontWeight: FontWeight.w600)),
+                        IconButton(
+                          icon: const Icon(Icons.edit_rounded, size: 20),
+                          onPressed: () =>
+                              Navigator.pushNamed(context, AppRoutes.anggotaEditProfile),
+                        ),
+                      ],
+                    ),
+                    const Divider(),
                     if (user?.noTelepon != null)
                       _ProfileItem(
                           icon: Icons.phone_rounded,
@@ -304,7 +320,7 @@ class _AnggotaDashboardScreenState extends ConsumerState<AnggotaDashboardScreen>
                 ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
