@@ -18,17 +18,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_navigated) return;
-      final state = ref.read(authStateProvider);
-      state.whenOrNull(
-        data: (user) {
-          if (user != null) _navigate(user);
-        },
-        error: (_, __) => _navigate(null),
-      );
-    });
-    Future.delayed(const Duration(seconds: 5), _forceProceed);
+    Future.delayed(const Duration(seconds: 2), _delayedCheck);
+    Future.delayed(const Duration(seconds: 6), _forceProceed);
+  }
+
+  void _delayedCheck() {
+    if (_navigated || !mounted) return;
+    final state = ref.read(authStateProvider);
+    state.whenOrNull(
+      data: (user) => _navigate(user),
+      error: (_, __) => _navigate(null),
+    );
   }
 
   void _forceProceed() {

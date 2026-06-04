@@ -68,9 +68,17 @@ class AuthNotifier extends StateNotifier<AsyncValue<UserModel?>> {
       rethrow;
     }
   }
+
+  void syncFromAuthState(AsyncValue<UserModel?> value) {
+    state = value;
+  }
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AsyncValue<UserModel?>>((ref) {
   final authService = ref.watch(authServiceProvider);
-  return AuthNotifier(authService);
+  final notifier = AuthNotifier(authService);
+  ref.listen(authStateProvider, (_, next) {
+    notifier.syncFromAuthState(next);
+  });
+  return notifier;
 });
