@@ -1,48 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Development mode: authenticated users can read/write their own data
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-
-    function isAdmin() {
-      return isAuthenticated()
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-
-    // Users collection
-    match /users/{userId} {
-      allow read, write: if isAuthenticated() && isOwner(userId);
-    }
-
-    // Simpanan collection
-    match /simpanan/{simpananId} {
-      allow read: if isAuthenticated() && (isAdmin() || request.auth.uid == resource.data.userId);
-      allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated();
-    }
-
-    // Pinjaman collection
-    match /pinjaman/{pinjamanId} {
-      allow read: if isAuthenticated() && (isAdmin() || request.auth.uid == resource.data.userId);
-      allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated();
-    }
-
-    // Angsuran collection
-    match /angsuran/{angsuranId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    // Settings collection
-    match /settings/{settingId} {
-      allow read, write: if isAuthenticated();
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
