@@ -19,6 +19,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(seconds: 2), _delayedCheck);
+    Future.delayed(const Duration(seconds: 5), _forceProceed);
   }
 
   void _delayedCheck() {
@@ -28,6 +29,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       data: (user) => _navigate(user),
       error: (_, __) => _navigate(null),
     );
+  }
+
+  void _forceProceed() {
+    if (!_navigated && mounted) _navigate(null);
   }
 
   @override

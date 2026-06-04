@@ -205,6 +205,10 @@ class DummyDataSeeder {
   }
 
   Future<void> _createPinjaman(List<String> userIds) async {
+    if (userIds.length < 4) {
+      print('Skip pinjaman: not enough members');
+      return;
+    }
     final now = DateTime.now();
 
     // Beberapa anggota memiliki pinjaman

@@ -80,7 +80,7 @@ flutter run
 - Password: `admin123`
 
 **Anggota:**
-- Email: `budi@email.com` / Password: `anggota123`
+- Email: `budi@email.com` / Password: ``
 - Email: `siti@email.com` / Password: `anggota123`
 - Email: `ahmad@email.com` / Password: `anggota123`
 - Email: `dewi@email.com` / Password: `anggota123`
