@@ -72,6 +72,11 @@ class AuthNotifier extends StateNotifier<AsyncValue<UserModel?>> {
   void syncFromAuthState(AsyncValue<UserModel?> value) {
     state = value;
   }
+
+  Future<void> refreshUserData() async {
+    final user = await _authService.getCurrentUserData();
+    state = AsyncValue.data(user);
+  }
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AsyncValue<UserModel?>>((ref) {

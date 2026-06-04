@@ -63,6 +63,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         'updatedAt': DateTime.now(),
       });
 
+      await ref.read(authProvider.notifier).refreshUserData();
+
       if (mounted) {
         Helpers.showSnackBar(context, 'Profil berhasil diperbarui', isSuccess: true);
         Navigator.pop(context);
