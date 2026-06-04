@@ -1,4 +1,4 @@
-package com.example.koperasi_ku
+package com.tianreformis.koperasiku
 
 import io.flutter.embedding.android.FlutterActivity
 
