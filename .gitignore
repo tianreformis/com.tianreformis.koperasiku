@@ -43,4 +43,5 @@ pubspec.lock
 # Export files
 *.xlsx
 
-
+#gitignore for google-services.json
+android/app/google-services.json

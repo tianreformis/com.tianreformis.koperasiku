@@ -18,17 +18,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), _delayedCheck);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_navigated) return;
+      final state = ref.read(authStateProvider);
+      state.whenOrNull(
+        data: (user) {
+          if (user != null) _navigate(user);
+        },
+        error: (_, __) => _navigate(null),
+      );
+    });
     Future.delayed(const Duration(seconds: 5), _forceProceed);
-  }
-
-  void _delayedCheck() {
-    if (_navigated || !mounted) return;
-    final state = ref.read(authStateProvider);
-    state.whenOrNull(
-      data: (user) => _navigate(user),
-      error: (_, __) => _navigate(null),
-    );
   }
 
   void _forceProceed() {
@@ -53,7 +53,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -93,14 +93,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (_navigated || !mounted) return;
     _navigated = true;
     if (user != null) {
-      if (user.role == 'admin') {
-        Navigator.pushReplacementNamed(context, AppRoutes.adminDashboard);
-      } else {
-        Navigator.pushReplacementNamed(context, AppRoutes.anggotaDashboard);
-      }
+      Navigator.pushReplacementNamed(
+        context,
+        user.role == 'admin' ? AppRoutes.adminDashboard : AppRoutes.anggotaDashboard,
+      );
     } else {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
     }
   }
-
 }

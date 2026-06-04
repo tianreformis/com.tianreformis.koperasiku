@@ -28,6 +28,12 @@ class _PengajuanPinjamanScreenState
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    _jumlahController.addListener(() => setState(() {}));
+  }
+
+  @override
   void dispose() {
     _jumlahController.dispose();
     _keteranganController.dispose();
@@ -100,6 +106,119 @@ class _PengajuanPinjamanScreenState
       return double.parse(
           ((jumlah + bungaTotal) / tenor).toStringAsFixed(0));
     }
+  }
+
+  List<Map<String, dynamic>> _hitungAngsuranDetail() {
+    final jumlah = double.tryParse(
+        _jumlahController.text.replaceAll('.', '').replaceAll(',', '.'));
+    if (jumlah == null || jumlah < 500000) return [];
+    final bunga = _jenisBunga == 'flat' ? 0.12 : 0.10;
+    final pokokPerBulan = jumlah / _tenor;
+    final List<Map<String, dynamic>> result = [];
+    for (int i = 1; i <= _tenor; i++) {
+      double angsuran;
+      if (_jenisBunga == 'flat') {
+        final bungaPerBulan = jumlah * bunga / 12;
+        angsuran = pokokPerBulan + bungaPerBulan;
+      } else {
+        final sisaPinjaman = jumlah - (pokokPerBulan * (i - 1));
+        final bungaPerBulan = sisaPinjaman * bunga / 12;
+        angsuran = pokokPerBulan + bungaPerBulan;
+      }
+      result.add({
+        'ke': i,
+        'angsuran': double.parse(angsuran.toStringAsFixed(0)),
+        'pokok': double.parse(pokokPerBulan.toStringAsFixed(0)),
+      });
+    }
+    return result;
+  }
+
+  Widget _buildSimulasi() {
+    final jumlah = double.tryParse(
+        _jumlahController.text.replaceAll('.', '').replaceAll(',', '.'));
+    if (jumlah == null || jumlah < 500000) return const SizedBox.shrink();
+    final bunga = _jenisBunga == 'flat' ? 0.12 : 0.10;
+    final angsuranPerBulan = _hitungAngsuran(jumlah, _tenor, bunga, _jenisBunga);
+    final totalBayar = angsuranPerBulan * _tenor;
+    final detail = _hitungAngsuranDetail();
+    final totalBunga = detail.fold<double>(0, (s, d) => s + (d['angsuran'] as double) - (d['pokok'] as double));
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.calculate_rounded, color: AppTheme.primaryColor),
+                const SizedBox(width: 8),
+                Text('Simulasi Angsuran',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.w600)),
+              ],
+            ),
+            const Divider(),
+            _SimulasiRow(label: 'Jumlah Pinjaman',
+                value: Formatters.formatRupiah(jumlah)),
+            _SimulasiRow(label: 'Tenor', value: '$_tenor bulan'),
+            _SimulasiRow(label: 'Bunga ${_jenisBunga == 'flat' ? 'Flat 12%' : 'Menurun 10%'}',
+                value: Formatters.formatRupiah(totalBunga)),
+            _SimulasiRow(label: 'Angsuran/Bulan',
+                value: Formatters.formatRupiah(angsuranPerBulan),
+                isBold: true),
+            _SimulasiRow(label: 'Total Bayar',
+                value: Formatters.formatRupiah(totalBayar)),
+            if (detail.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text('Detail Angsuran',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Table(
+                    border: TableBorder.all(color: Colors.grey.shade200, width: 0.5),
+                    columnWidths: const {
+                      0: FlexColumnWidth(0.8),
+                      1: FlexColumnWidth(1.2),
+                      2: FlexColumnWidth(1),
+                    },
+                    children: [
+                      TableRow(
+                        decoration: BoxDecoration(color: AppTheme.primaryColor.withValues(alpha: 0.1)),
+                        children: const [
+                          _TableCell('Bln', isHeader: true),
+                          _TableCell('Angsuran', isHeader: true),
+                          _TableCell('Pokok', isHeader: true),
+                        ],
+                      ),
+                      ...detail.map((d) => TableRow(
+                        children: [
+                          _TableCell('${d['ke']}'),
+                          _TableCell(Formatters.formatRupiah(d['angsuran'] as double)),
+                          _TableCell(Formatters.formatRupiah(d['pokok'] as double)),
+                        ],
+                      )),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -178,62 +297,7 @@ class _PengajuanPinjamanScreenState
               ),
               const SizedBox(height: 24),
               if (_jumlahController.text.isNotEmpty)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Simulasi Angsuran',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                        const Divider(),
-                        _SimulasiRow(
-                          label: 'Jumlah Pinjaman',
-                          value: _jumlahController.text.isNotEmpty
-                              ? Formatters.formatRupiah(double.parse(
-                                  _jumlahController.text.replaceAll('.', '')))
-                              : 'Rp 0',
-                        ),
-                        _SimulasiRow(
-                          label: 'Tenor',
-                          value: '$_tenor bulan',
-                        ),
-                        _SimulasiRow(
-                          label: 'Angsuran/Bulan',
-                          value: _jumlahController.text.isNotEmpty
-                              ? Formatters.formatRupiah(_hitungAngsuran(
-                                  double.parse(_jumlahController.text
-                                      .replaceAll('.', '')),
-                                  _tenor,
-                                  _jenisBunga == 'flat' ? 0.12 : 0.10,
-                                  _jenisBunga,
-                                ))
-                              : 'Rp 0',
-                          isBold: true,
-                        ),
-                        _SimulasiRow(
-                          label: 'Total Bayar',
-                          value: _jumlahController.text.isNotEmpty
-                              ? Formatters.formatRupiah(
-                                  _hitungAngsuran(
-                                        double.parse(_jumlahController.text
-                                            .replaceAll('.', '')),
-                                        _tenor,
-                                        _jenisBunga == 'flat' ? 0.12 : 0.10,
-                                        _jenisBunga,
-                                      ) *
-                                      _tenor)
-                              : 'Rp 0',
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                _buildSimulasi(),
               const SizedBox(height: 24),
               LoadingButton(
                 label: 'Ajukan Pinjaman',
@@ -243,6 +307,29 @@ class _PengajuanPinjamanScreenState
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TableCell extends StatelessWidget {
+  final String text;
+  final bool isHeader;
+
+  const _TableCell(this.text, {this.isHeader = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: isHeader ? 12 : 11,
+          fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,
+          color: isHeader ? AppTheme.primaryColor : null,
         ),
       ),
     );
