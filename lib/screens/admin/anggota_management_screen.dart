@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/user_provider.dart';
 import '../../models/user_model.dart';
 import '../../config/routes.dart';
+import '../../config/constants.dart';
 import '../../config/theme.dart';
 import '../../utils/formatters.dart';
 import '../../utils/helpers.dart';
@@ -55,67 +58,132 @@ class AnggotaManagementScreen extends ConsumerWidget {
     final emailCtrl = TextEditingController();
     final noTelpCtrl = TextEditingController();
     final alamatCtrl = TextEditingController();
+    bool isLoading = false;
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Tambah Anggota Baru'),
-        content: SingleChildScrollView(
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: namaCtrl,
-                  decoration: const InputDecoration(labelText: 'Nama Lengkap'),
-                  validator: (v) =>
-                      v == null || v.isEmpty ? 'Nama harus diisi' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: emailCtrl,
-                  decoration: const InputDecoration(labelText: 'Email'),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (v) =>
-                      v == null || v.isEmpty ? 'Email harus diisi' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: noTelpCtrl,
-                  decoration: const InputDecoration(labelText: 'No. Telepon'),
-                  keyboardType: TextInputType.phone,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: alamatCtrl,
-                  decoration: const InputDecoration(labelText: 'Alamat'),
-                  maxLines: 2,
-                ),
-              ],
+      builder: (ctx) => StatefulBuilder(builder: (ctx, setDialogState) {
+        return AlertDialog(
+          title: const Text('Tambah Anggota Baru'),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: namaCtrl,
+                    decoration:
+                        const InputDecoration(labelText: 'Nama Lengkap'),
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Nama harus diisi' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: emailCtrl,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Email harus diisi' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: noTelpCtrl,
+                    decoration:
+                        const InputDecoration(labelText: 'No. Telepon'),
+                    keyboardType: TextInputType.phone,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: alamatCtrl,
+                    decoration: const InputDecoration(labelText: 'Alamat'),
+                    maxLines: 2,
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (formKey.currentState!.validate()) {
-                Navigator.pop(ctx);
-                Helpers.showSnackBar(
-                  context,
-                  'Anggota berhasil ditambahkan! Untuk login awal, gunakan email dan password default: 123456',
-                  isSuccess: true,
-                );
-              }
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: isLoading ? null : () => Navigator.pop(ctx),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (!formKey.currentState!.validate()) return;
+                      setDialogState(() => isLoading = true);
+                      try {
+                        final result = await FirebaseAuth.instance
+                            .createUserWithEmailAndPassword(
+                          email: emailCtrl.text.trim(),
+                          password: 'anggota123',
+                        );
+                        final user = result.user;
+                        if (user != null) {
+                          final anggota = UserModel(
+                            id: user.uid,
+                            nomorAnggota: '',
+                            nama: namaCtrl.text.trim(),
+                            email: emailCtrl.text.trim(),
+                            noTelepon: noTelpCtrl.text.trim(),
+                            alamat: alamatCtrl.text.trim(),
+                            role: 'anggota',
+                            createdAt: DateTime.now(),
+                          );
+                          await FirebaseFirestore.instance
+                              .collection(AppConstants.usersCollection)
+                              .doc(user.uid)
+                              .set(anggota.toMap());
+                        }
+                        Navigator.pop(ctx);
+                        ref.invalidate(anggotaListProvider);
+                        if (context.mounted) {
+                          Helpers.showSnackBar(
+                            context,
+                            'Anggota berhasil ditambahkan! Password default: anggota123',
+                            isSuccess: true,
+                          );
+                        }
+                      } on FirebaseAuthException catch (e) {
+                        setDialogState(() => isLoading = false);
+                        String msg;
+                        switch (e.code) {
+                          case 'email-already-in-use':
+                            msg = 'Email sudah digunakan';
+                            break;
+                          case 'invalid-email':
+                            msg = 'Format email tidak valid';
+                            break;
+                          case 'weak-password':
+                            msg = 'Password terlalu lemah';
+                            break;
+                          default:
+                            msg = 'Gagal: ${e.message}';
+                        }
+                        if (context.mounted) {
+                          Helpers.showSnackBar(context, msg, isError: true);
+                        }
+                      } catch (e) {
+                        setDialogState(() => isLoading = false);
+                        if (context.mounted) {
+                          Helpers.showSnackBar(context, 'Gagal: $e',
+                              isError: true);
+                        }
+                      }
+                    },
+              child: isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Simpan'),
+            ),
+          ],
+        );
+      }),
     );
   }
 }

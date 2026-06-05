@@ -99,13 +99,14 @@ class _PinjamanCard extends StatelessWidget {
             if (pinjaman.status == 'aktif') ...[
               const SizedBox(height: 8),
               LinearProgressIndicator(
-                value: pinjaman.sisaPinjaman / pinjaman.totalBayar,
+                value: (pinjaman.totalBayar - pinjaman.sisaPinjaman) /
+                    pinjaman.totalBayar,
                 backgroundColor: Colors.grey.shade200,
                 color: AppTheme.primaryColor,
               ),
               const SizedBox(height: 4),
               Text(
-                'Sisa: ${Formatters.formatRupiah(pinjaman.totalBayar - pinjaman.sisaPinjaman)}',
+                'Sisa: ${Formatters.formatRupiah(pinjaman.sisaPinjaman)}',
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],

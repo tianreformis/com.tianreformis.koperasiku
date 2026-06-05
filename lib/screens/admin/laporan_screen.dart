@@ -263,8 +263,12 @@ class _LaporanScreenState extends ConsumerState<LaporanScreen> {
     setState(() => _isExportingAngsuran = true);
     try {
       final now = DateTime.now();
+      final startOfMonth = DateTime(now.year, now.month, 1);
+      final endOfMonth = DateTime(now.year, now.month + 1, 0);
+      final data = await _firestore.getAngsuranByDateRange(
+          startOfMonth, endOfMonth);
       final file = await _pdfService.generateLaporanAngsuran(
-        angsuranList: [],
+        angsuranList: data,
         namaKoperasi: 'KoperasiKu',
         periode: Formatters.formatMonthYear(now),
       );

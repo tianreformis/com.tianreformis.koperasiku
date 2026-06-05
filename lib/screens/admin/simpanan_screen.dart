@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/simpanan_provider.dart';
-import '../../services/firestore_service.dart';
+import '../../providers/auth_provider.dart';
 import '../../models/simpanan_model.dart';
 import '../../models/user_model.dart';
 import '../../providers/user_provider.dart';
@@ -128,6 +128,11 @@ class _SimpananScreenState extends ConsumerState<SimpananScreen> {
     final jumlahCtrl = TextEditingController();
     String selectedJenis = 'wajib';
     String? selectedUserId;
+    List<UserModel> anggotaList = [];
+
+    ref.read(anggotaListProvider.future).then((list) {
+      if (mounted) setState(() => anggotaList = list);
+    });
 
     showDialog(
       context: context,
@@ -136,36 +141,47 @@ class _SimpananScreenState extends ConsumerState<SimpananScreen> {
         content: SingleChildScrollView(
           child: Form(
             key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<String>(
-                  value: selectedUserId,
-                  decoration: const InputDecoration(labelText: 'Pilih Anggota'),
-                  items: const [],
-                  onChanged: (v) => selectedUserId = v,
-                  validator: (v) => v == null ? 'Pilih anggota' : null,
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: selectedJenis,
-                  decoration: const InputDecoration(labelText: 'Jenis Simpanan'),
-                  items: const [
-                    DropdownMenuItem(value: 'pokok', child: Text('Simpanan Pokok')),
-                    DropdownMenuItem(value: 'wajib', child: Text('Simpanan Wajib')),
-                    DropdownMenuItem(
-                        value: 'sukarela', child: Text('Simpanan Sukarela')),
-                  ],
-                  onChanged: (v) => selectedJenis = v!,
-                ),
-                const SizedBox(height: 12),
-                RupiahInput(
-                  controller: jumlahCtrl,
-                  label: 'Jumlah',
-                  validator: (v) => Validators.positiveNumber(v, 'Jumlah'),
-                ),
-              ],
-            ),
+            child: StatefulBuilder(builder: (ctx, setDialogState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedUserId,
+                    decoration:
+                        const InputDecoration(labelText: 'Pilih Anggota'),
+                    items: anggotaList
+                        .map((a) => DropdownMenuItem(
+                              value: a.id,
+                              child: Text('${a.nama} (${a.nomorAnggota})'),
+                            ))
+                        .toList(),
+                    onChanged: (v) => setDialogState(() => selectedUserId = v),
+                    validator: (v) => v == null ? 'Pilih anggota' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: selectedJenis,
+                    decoration:
+                        const InputDecoration(labelText: 'Jenis Simpanan'),
+                    items: const [
+                      DropdownMenuItem(
+                          value: 'pokok', child: Text('Simpanan Pokok')),
+                      DropdownMenuItem(
+                          value: 'wajib', child: Text('Simpanan Wajib')),
+                      DropdownMenuItem(
+                          value: 'sukarela', child: Text('Simpanan Sukarela')),
+                    ],
+                    onChanged: (v) => setDialogState(() => selectedJenis = v!),
+                  ),
+                  const SizedBox(height: 12),
+                  RupiahInput(
+                    controller: jumlahCtrl,
+                    label: 'Jumlah',
+                    validator: (v) => Validators.positiveNumber(v, 'Jumlah'),
+                  ),
+                ],
+              );
+            }),
           ),
         ),
         actions: [
@@ -174,9 +190,30 @@ class _SimpananScreenState extends ConsumerState<SimpananScreen> {
             child: const Text('Batal'),
           ),
           ElevatedButton(
-            onPressed: () {
-              if (formKey.currentState!.validate()) {
-                Navigator.pop(ctx);
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              if (selectedUserId == null) {
+                Helpers.showSnackBar(
+                    context, 'Pilih anggota terlebih dahulu', isError: true);
+                return;
+              }
+              final jumlah =
+                  double.tryParse(jumlahCtrl.text.replaceAll(RegExp(r'\D'), '')) ?? 0;
+              final currentUser = ref.read(authProvider).valueOrNull;
+              Navigator.pop(ctx);
+              await ref.read(simpananProvider.notifier).addSimpanan(
+                    SimpananModel(
+                      userId: selectedUserId!,
+                      jenis: selectedJenis,
+                      jumlah: jumlah,
+                      adminId: currentUser?.id,
+                      createdAt: DateTime.now(),
+                      tanggal: DateTime.now(),
+                    ),
+                  );
+              if (mounted) {
+                Helpers.showSnackBar(context, 'Simpanan berhasil dicatat',
+                    isSuccess: true);
               }
             },
             child: const Text('Simpan'),

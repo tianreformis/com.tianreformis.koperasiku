@@ -4,6 +4,7 @@ import '../../models/user_model.dart';
 import '../../services/firestore_service.dart';
 import '../../providers/simpanan_provider.dart';
 import '../../providers/pinjaman_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../config/theme.dart';
 import '../../utils/formatters.dart';
 import '../../widgets/stat_card.dart';
@@ -261,7 +262,11 @@ class _AnggotaDetailScreenState extends ConsumerState<AnggotaDetailScreen> {
     if (anggota.aktif) {
       await service.nonaktifkanAnggota(anggota.id!);
       Helpers.showSnackBar(context, 'Anggota dinonaktifkan', isSuccess: true);
+    } else {
+      await service.aktifkanAnggota(anggota.id!);
+      Helpers.showSnackBar(context, 'Anggota diaktifkan kembali',
+          isSuccess: true);
     }
-    setState(() {});
+    ref.invalidate(anggotaListProvider);
   }
 }

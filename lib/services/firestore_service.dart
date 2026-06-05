@@ -43,6 +43,13 @@ class FirestoreService {
         .update({'aktif': false, 'updatedAt': DateTime.now()});
   }
 
+  Future<void> aktifkanAnggota(String userId) async {
+    await _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(userId)
+        .update({'aktif': true, 'updatedAt': DateTime.now()});
+  }
+
   Future<int> getTotalAnggotaAktif() async {
     final snapshot = await _firestore
         .collection(AppConstants.usersCollection)
@@ -300,6 +307,21 @@ class FirestoreService {
       list.sort((a, b) => (b.jatuhTempo ?? DateTime.now()).compareTo(a.jatuhTempo ?? DateTime.now()));
       return list;
     });
+  }
+
+  Future<List<AngsuranModel>> getAngsuranByDateRange(
+      DateTime start, DateTime end) async {
+    final snapshot = await _firestore
+        .collection(AppConstants.angsuranCollection)
+        .where('jatuhTempo', isGreaterThanOrEqualTo: start)
+        .where('jatuhTempo', isLessThanOrEqualTo: end)
+        .get();
+    final list = snapshot.docs
+        .map((doc) => AngsuranModel.fromMap(doc.data(), id: doc.id))
+        .toList();
+    list.sort((a, b) =>
+        (a.jatuhTempo ?? DateTime.now()).compareTo(b.jatuhTempo ?? DateTime.now()));
+    return list;
   }
 
   Future<void> bayarAngsuran(String angsuranId, double jumlah) async {

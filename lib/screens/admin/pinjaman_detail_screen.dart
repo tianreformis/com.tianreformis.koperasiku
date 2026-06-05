@@ -4,6 +4,7 @@ import '../../models/pinjaman_model.dart';
 import '../../models/angsuran_model.dart';
 import '../../services/firestore_service.dart';
 import '../../providers/pinjaman_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../config/theme.dart';
 import '../../utils/formatters.dart';
 import '../../widgets/loading_widget.dart';
@@ -187,11 +188,16 @@ class _PinjamanDetailScreenState extends ConsumerState<PinjamanDetailScreen> {
     );
   }
 
+  String _getAdminId() {
+    return ref.read(authProvider).valueOrNull?.id ?? 'unknown';
+  }
+
   Future<void> _approvePinjaman(PinjamanModel pinjaman) async {
     try {
+      final adminId = _getAdminId();
       await ref.read(pinjamanProvider.notifier).approvePinjaman(
             pinjaman.id!,
-            'admin',
+            adminId,
           );
       if (mounted) {
         Helpers.showSnackBar(context, 'Pinjaman disetujui', isSuccess: true);
@@ -230,9 +236,10 @@ class _PinjamanDetailScreenState extends ConsumerState<PinjamanDetailScreen> {
     );
 
     if (result != null && result.isNotEmpty) {
+      final adminId = _getAdminId();
       await ref.read(pinjamanProvider.notifier).tolakPinjaman(
             pinjaman.id!,
-            'admin',
+            adminId,
             result,
           );
       if (mounted) {

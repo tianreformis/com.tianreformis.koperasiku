@@ -88,7 +88,7 @@ class PinjamanModel {
   }
 
   double get sisaPinjaman {
-    return totalBayar - (angsuranPerBulan * tenor);
+    return totalBayar;
   }
 
   PinjamanModel copyWith({
